@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rdv-postgres
+    environment:
+      POSTGRES_DB: rdvdb
+      POSTGRES_USER: rdv_user
+      POSTGRES_PASSWORD: rdv_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rdv_user -d rdvdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: rdv-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/rdvdb
+      DB_USER: rdv_user
+      DB_PASSWORD: rdv_pass
+      API_USER: admin
+      API_PASSWORD: admin123
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  pgdata:

@@ -1,0 +1,13 @@
+target/
+*.class
+*.jar
+*.war
+*.ear
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.log
+*.env
+application-local.yml
+application-prod.yml
